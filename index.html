@@ -109,7 +109,6 @@
       .style('border-top-color', String)
       .html(function(d) {
           var r = colors.invertExtent(d);
-          console.log(r)
           return Math.floor(r[0]).toLocaleString()+" to "+Math.floor(r[1]).toLocaleString();
       });
     //Add Map Paths & Fill
