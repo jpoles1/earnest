@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>d3: Topojson Basemap</title>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="colorbrewer.js"></script>
   <style>
   body { margin:0; padding:20px; }
   #map {
@@ -17,10 +17,36 @@
     stroke:white;
     stroke-width:1px;
   }
+  #legend {
+    position: absolute;
+    width: 100px;
+    text-align: center;
+    top: 80px;
+  }
+  .legendbox{
+    margin-bottom: 15px;
+  }
+  #legend ul{
+    list-style: none;
+    display: inline;
+    margin-top: 0px;
+  }
+  li.key {
+    border-top-width: 15px;
+    border-top-style: solid;
+    font-size: .75em;
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 12pt;
+  }
   </style>
 </head>
 
 <body>
+  <div id="legend"></div>
   <div id="map"></div>
   <br>
   <em>Loan data from <a href="https://studentaid.ed.gov/sa/about/data-center/student/title-iv">here</a></em>
@@ -34,7 +60,6 @@
     .scale(1000)
     .translate([width / 2, height / 2])
     .precision(.1);
-
   path = d3.geo.path()
     .projection(projection);
 
@@ -46,12 +71,32 @@
     if(error) alert(error)
     d3.json("statedata.json", function(error, data){
       if(error) alert(error)
+      var datavar = "Recipients"
+      var colors = d3.scale.quantize().domain([data["mins"][datavar], data["maxes"][datavar]])
+        .range(colorbrewer.YlGn[7]);
+      var legend = d3.select('#legend').html("Legend:<br>"+datavar+"<br>").attr("style", "left:"+(width+100)+"px")
+        .append('ul').attr('class', 'list-inline')
+
+      var keys = legend.selectAll('li.key')
+          .data(colors.range());
+
+      keys.enter().append("div").attr("class", "legendbox").attr("style", "border: 1px solid black").append('li')
+          .attr('class', 'key')
+          .style('border-top-color', String)
+          .text(function(d) {
+              var r = colors.invertExtent(d);
+              return Math.floor(r[0]);
+          });
+
+      console.log(colors)
       var path = d3.geo.path();
       svg.selectAll("path").data(state.features).enter()
-         .append("path").attr("d", path).attr("state", function(d){return d.properties.NAME});
+         .append("path").attr("d", path).attr("state", function(d){return d.properties.NAME})
+         .attr("stroke", "black")
+         .attr("fill", function(d){return colors(data["vals"][datavar][d.properties.NAME])})
       for(state in data){
         stateobj = data[state]
-        console.log(stateobj)
+        if(stateobj["State"]=="max"){console.log(stateobj)}
       }
     });
   });
