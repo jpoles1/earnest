@@ -49,12 +49,20 @@
     font-weight: bold;
     font-size: 12pt;
   }
+  #legtitle{
+    font-size: 16pt;
+    margin-bottom: -10px;
+    font-weight: bold;
+  }
+  #legend select{
+    font-size: 12pt;
+  }
   </style>
 </head>
 
 <body>
   <h1>Map of US Direct, Unsubsidized Student Loans to Undergraduates</h1>
-  <div id="legend">Legend:<br><select></select></div>
+  <div id="legend"><div id="legtitle">Legend:</div><br><select></select></div>
   <div id="map"></div>
   <br>
   <em>Loan data from <a href="https://studentaid.ed.gov/sa/about/data-center/student/title-iv">here</a></em>
