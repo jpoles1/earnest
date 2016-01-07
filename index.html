@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>d3: Topojson Basemap</title>
+  <title>D3 Loan Map -- Jordan Poles</title>
+  <link type="text/css" rel="stylesheet" href="jquery.qtip.min.css" />
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="colorbrewer.js"></script>
+  <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="jquery.qtip.min.js"></script>
   <style>
   body { margin:0; padding:20px; }
   #map {
@@ -42,6 +45,10 @@
     font-weight: bold;
     font-size: 12pt;
   }
+  .my-tooltip{
+    font-weight: bold;
+    font-size: 12pt;
+  }
   </style>
 </head>
 
@@ -68,8 +75,8 @@
     .attr("height", height);
   //Setup Legend
   var legend = d3.select('#legend').attr("style", "left:"+(width+100)+"px").append('ul').attr('class', 'list-inline')
-  var datavars = ["Recipients", "amt disbursed"]
-  var prettynames = ["Recipients", "$ Disbursed"]
+  var datavars = ["Recipients", "amt disbursed", "Population"]
+  var prettynames = ["# of Loans", "$ Disbursed", "State Pop."]
   var varselect = d3.select("#legend select")
   for(i in datavars){
     varselect.append("option").attr("value", datavars[i]).text(prettynames[i])
@@ -94,6 +101,10 @@
        .append("path").attr("d", path).attr("state", function(d){return d.properties.NAME})
        .attr("stroke", "black")
        .attr("fill", function(d){return colors(data["vals"][datavar][d.properties.NAME])})
+       .attr("title", function(d){return d.properties.NAME+": "+parseInt(data["vals"][datavar][d.properties.NAME]).toLocaleString()})
+    $("path[title]").qtip({
+      style: { classes: 'my-tooltip' }
+    })
   }
   //Load Geodata
   d3.json("usgeo.json", function(error,state) {
