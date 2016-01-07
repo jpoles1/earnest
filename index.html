@@ -74,7 +74,7 @@
     .attr("width", width)
     .attr("height", height);
   //Setup Legend
-  var legend = d3.select('#legend').attr("style", "left:"+(width+100)+"px").append('ul').attr('class', 'list-inline')
+  var legend = d3.select('#legend').attr("style", "left:"+(width+100)+"px").append('ul').append("div").attr('class', 'list-inline')
   var datavars = ["Recipients", "amt disbursed", "Population"]
   var prettynames = ["# of Loans", "$ Disbursed", "State Pop."]
   var varselect = d3.select("#legend select")
@@ -115,7 +115,6 @@
       //Run
       drawMap(state, data, datavars[0])
       varselect.on("input", function() {
-        console.log(this.value)
         drawMap(state, data, this.value)
       });
     });
