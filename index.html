@@ -13,7 +13,7 @@
   #map {
     display:block;
     width:900px;
-    height:500px;
+    height:600px;
   }
   .county {
     fill:#c0c0c0;
@@ -22,13 +22,13 @@
   }
   #legend {
     position: absolute;
-    width: 100px;
+    width: 200px;
     text-align: center;
     top: 120px;
     padding-right: 50px;
   }
   .legendbox{
-    margin-bottom: 15px;
+    margin-top: 15px;
   }
   #legend ul{
     list-style: none;
@@ -44,11 +44,12 @@
     padding-right: 0;
     margin-bottom: 5px;
     font-weight: bold;
-    font-size: 12pt;
+    font-size: 11pt;
   }
   .my-tooltip{
     font-weight: bold;
     font-size: 12pt;
+    cursor: crosshair;
   }
   #legtitle{
     font-size: 16pt;
@@ -57,6 +58,11 @@
   }
   #legend select{
     font-size: 12pt;
+    margin: auto;
+    margin-left: 30px;
+  }
+  svg{
+    cursor: crosshair;
   }
   </style>
 </head>
@@ -101,9 +107,10 @@
     keys.enter().append("div").attr("class", "legendbox").attr("style", "border: 1px solid black").append('li')
       .attr('class', 'key')
       .style('border-top-color', String)
-      .text(function(d) {
+      .html(function(d) {
           var r = colors.invertExtent(d);
-          return Math.floor(r[0]).toLocaleString();
+          console.log(r)
+          return Math.floor(r[0]).toLocaleString()+" to "+Math.floor(r[1]).toLocaleString();
       });
     //Add Map Paths & Fill
     svg.html("").selectAll("path").data(state.features).enter()
@@ -112,7 +119,8 @@
        .attr("fill", function(d){return colors(data["vals"][datavar][d.properties.NAME])})
        .attr("title", function(d){return d.properties.NAME+": "+parseInt(data["vals"][datavar][d.properties.NAME]).toLocaleString()})
     $("path[title]").qtip({
-      style: { classes: 'my-tooltip' }
+      style: {classes: 'my-tooltip'},
+      position: {target: 'mouse'}
     })
   }
   //Load Geodata
