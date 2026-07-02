@@ -40,3 +40,13 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+## Docker Compose
+
+Build and run the production server on <http://localhost:4106>:
+
+```sh
+docker compose up --build
+```
+
+The Compose service stores its Bun SQLite database in the `earnest-data` volume at `/data/local.db`. Update `BETTER_AUTH_SECRET` in `docker-compose.yml` before using this outside local development.

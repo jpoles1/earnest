@@ -1,0 +1,12 @@
+node_modules
+.svelte-kit
+build
+output
+.playwright-cli
+.git
+.env
+.env.*
+local.db
+*.db
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*

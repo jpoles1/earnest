@@ -1,0 +1,20 @@
+services:
+  earnest:
+    build: .
+    ports:
+      - "4106:4106"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4106
+      ORIGIN: http://localhost:4106
+      DATABASE_URL: /data/local.db
+      BETTER_AUTH_SECRET: change-this-secret-before-production
+      GOOGLE_CLIENT_ID: ""
+      GOOGLE_CLIENT_SECRET: ""
+    volumes:
+      - earnest-data:/data
+    restart: unless-stopped
+
+volumes:
+  earnest-data:
