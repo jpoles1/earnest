@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
 import { env } from '$env/dynamic/private';
 
@@ -10,8 +10,11 @@ let dbInstance: unknown;
 
 function getDb() {
 	if (!dbInstance) {
-		const { drizzle } = require('drizzle-orm/bun-sqlite');
-		dbInstance = drizzle(env.DATABASE_URL, { schema });
+		const Database = require('better-sqlite3') as typeof import('better-sqlite3');
+		const { drizzle } = require('drizzle-orm/better-sqlite3') as typeof import(
+			'drizzle-orm/better-sqlite3'
+		);
+		dbInstance = drizzle(new Database(env.DATABASE_URL), { schema });
 	}
 
 	return dbInstance as Record<PropertyKey, unknown>;
@@ -24,4 +27,4 @@ export const db = new Proxy(
 			return getDb()[property];
 		}
 	}
-) as BunSQLiteDatabase<typeof schema>;
+) as BetterSQLite3Database<typeof schema>;

@@ -18,6 +18,11 @@
 		"db:studio": "drizzle-kit studio",
 		"auth:schema": "better-auth generate --config src/lib/server/auth.ts --output src/lib/server/db/auth.schema.ts --yes"
 	},
+	"dependencies": {
+		"better-auth": "~1.4.21",
+		"better-sqlite3": "^12.5.0",
+		"drizzle-orm": "^0.45.2"
+	},
 	"devDependencies": {
 		"@better-auth/cli": "~1.4.21",
 		"@sveltejs/adapter-node": "^5.5.7",
@@ -27,9 +32,8 @@
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.3.0",
 		"@types/node": "^24",
-		"better-auth": "~1.4.21",
+		"@types/better-sqlite3": "^7.6.13",
 		"drizzle-kit": "^0.31.10",
-		"drizzle-orm": "^0.45.2",
 		"svelte": "^5.56.1",
 		"svelte-check": "^4.6.0",
 		"tailwindcss": "^4.3.0",

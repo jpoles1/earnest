@@ -15,7 +15,7 @@ To recreate this project with the same configuration:
 
 ```sh
 # recreate this project
-bun x sv@0.16.1 create --template minimal --types ts --add vitest="usages:unit" tailwindcss="plugins:typography,forms" sveltekit-adapter="adapter:auto" drizzle="database:sqlite+sqlite:turso" better-auth="demo:none" --install bun ./
+npx sv@0.16.1 create --template minimal --types ts --add vitest="usages:unit" tailwindcss="plugins:typography,forms" sveltekit-adapter="adapter:auto" drizzle="database:sqlite+sqlite:turso" better-auth="demo:none" --install npm ./
 ```
 
 ## Developing
@@ -49,4 +49,4 @@ Build and run the production server on <http://localhost:4106>:
 docker compose up --build
 ```
 
-The Compose service stores its Bun SQLite database in the `earnest-data` volume at `/data/local.db`. Update `BETTER_AUTH_SECRET` in `docker-compose.yml` before using this outside local development.
+The Compose service stores its SQLite database in the `earnest-data` volume at `/data/local.db`. Update `BETTER_AUTH_SECRET` in `docker-compose.yml` before using this outside local development.

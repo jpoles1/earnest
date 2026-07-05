@@ -1,14 +1,14 @@
-FROM oven/bun:1 AS deps
+FROM node:24-bookworm-slim AS deps
 WORKDIR /app
 
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci
 
 FROM deps AS build
 COPY . .
-RUN bun run build
+RUN npm run build
 
-FROM oven/bun:1 AS runner
+FROM node:24-bookworm-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -22,4 +22,4 @@ COPY drizzle.config.ts ./
 COPY src ./src
 
 EXPOSE 4106
-CMD ["sh", "-c", "bun run db:push && bun build/index.js"]
+CMD ["sh", "-c", "npm run db:push && node build/index.js"]
