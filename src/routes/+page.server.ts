@@ -1,6 +1,6 @@
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
-import { auth, getDevMagicLink } from '$lib/server/auth';
+import { getAuth, getDevMagicLink } from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import {
 	habit,
@@ -96,6 +96,7 @@ export const actions: Actions = {
 		if (!email) return fail(400, { authError: 'Enter an email address.' });
 
 		try {
+			const auth = getAuth();
 			await auth.api.signInMagicLink({
 				body: { email, name, callbackURL: '/' },
 				headers: request.headers
@@ -120,6 +121,7 @@ export const actions: Actions = {
 		}
 
 		try {
+			const auth = getAuth();
 			await auth.api.signUpEmail({ body: { name, email, password }, headers: request.headers });
 		} catch {
 			return fail(400, { authError: 'Could not create that account. The email may already be in use.' });
@@ -133,6 +135,7 @@ export const actions: Actions = {
 		const password = stringValue(form, 'password');
 
 		try {
+			const auth = getAuth();
 			await auth.api.signInEmail({ body: { email, password }, headers: request.headers });
 		} catch {
 			return fail(400, { authError: 'Email or password was not recognized.' });
@@ -142,6 +145,7 @@ export const actions: Actions = {
 	},
 	google: async ({ request }) => {
 		try {
+			const auth = getAuth();
 			const response = await auth.api.signInSocial({
 				body: { provider: 'google', callbackURL: '/' },
 				headers: request.headers
@@ -157,6 +161,7 @@ export const actions: Actions = {
 		});
 	},
 	signOut: async ({ request }) => {
+		const auth = getAuth();
 		await auth.api.signOut({ headers: request.headers });
 		throw redirect(303, '/');
 	},

@@ -7,32 +7,44 @@ import { getRequestEvent } from '$app/server';
 import { db } from '$lib/server/db';
 
 const devMagicLinks = new Map<string, { url: string; expiresAt: number }>();
+let authInstance: Auth | undefined;
 
-export const auth = betterAuth({
-	baseURL: env.ORIGIN,
-	secret: env.BETTER_AUTH_SECRET,
-	database: drizzleAdapter(db, { provider: 'sqlite' }),
-	emailAndPassword: { enabled: true },
-	socialProviders:
-		env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
-			? {
-					google: {
-						clientId: env.GOOGLE_CLIENT_ID,
-						clientSecret: env.GOOGLE_CLIENT_SECRET
+type Auth = ReturnType<typeof createAuth>;
+
+function createAuth() {
+	if (!env.BETTER_AUTH_SECRET) throw new Error('BETTER_AUTH_SECRET is not set');
+
+	return betterAuth({
+		baseURL: env.ORIGIN,
+		secret: env.BETTER_AUTH_SECRET,
+		database: drizzleAdapter(db, { provider: 'sqlite' }),
+		emailAndPassword: { enabled: true },
+		socialProviders:
+			env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+				? {
+						google: {
+							clientId: env.GOOGLE_CLIENT_ID,
+							clientSecret: env.GOOGLE_CLIENT_SECRET
+						}
 					}
+				: undefined,
+		plugins: [
+			magicLink({
+				expiresIn: 10 * 60,
+				sendMagicLink({ email, url }) {
+					devMagicLinks.set(email.toLowerCase(), { url, expiresAt: Date.now() + 10 * 60 * 1000 });
+					console.info(`Magic link for ${email}: ${url}`);
 				}
-			: undefined,
-	plugins: [
-		magicLink({
-			expiresIn: 10 * 60,
-			sendMagicLink({ email, url }) {
-				devMagicLinks.set(email.toLowerCase(), { url, expiresAt: Date.now() + 10 * 60 * 1000 });
-				console.info(`Magic link for ${email}: ${url}`);
-			}
-		}),
-		sveltekitCookies(getRequestEvent) // make sure this is the last plugin in the array
-	]
-});
+			}),
+			sveltekitCookies(getRequestEvent) // make sure this is the last plugin in the array
+		]
+	});
+}
+
+export function getAuth() {
+	authInstance ??= createAuth();
+	return authInstance;
+}
 
 export function getDevMagicLink(email: string) {
 	const key = email.toLowerCase();
