@@ -164,8 +164,8 @@
 				</div>
 
 				<aside class="panel p-5">
-					{#if form?.authError}
-						<p class="message error">{form.authError}</p>
+					{#if form?.authError || data.authError}
+						<p class="message error">{form?.authError || data.authError}</p>
 					{:else if form?.authMessage}
 						<p class="message">{form.authMessage}</p>
 					{/if}

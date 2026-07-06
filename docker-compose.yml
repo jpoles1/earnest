@@ -9,7 +9,6 @@ services:
       PORT: 4106
       ORIGIN: http://localhost:4106
       DATABASE_URL: /data/local.db
-      BETTER_AUTH_SECRET: change-this-secret-before-production
       GOOGLE_CLIENT_ID: ""
       GOOGLE_CLIENT_SECRET: ""
     volumes:

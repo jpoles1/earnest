@@ -1,6 +1,14 @@
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
-import { getAuth, getDevMagicLink } from '$lib/server/auth';
+import {
+	getDevMagicLink,
+	getGoogleAuthUrl,
+	requestMagicLink,
+	setGoogleStateCookie,
+	signInWithPassword,
+	signOut,
+	signUpWithPassword
+} from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import {
 	habit,
@@ -20,10 +28,11 @@ const columns = new Set<ColumnId>(['morning', 'focus', 'wellness', 'home']);
 const defaultRewardImage =
 	'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=900&q=80';
 
-export const load = async ({ locals }) => {
+export const load = async ({ locals, url }) => {
 	if (!locals.user) {
 		return {
 			user: null,
+			authError: url.searchParams.get('authError'),
 			points: 0,
 			habits: [],
 			rewards: [],
@@ -88,7 +97,7 @@ export const load = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	requestMagicLink: async ({ request }) => {
+	requestMagicLink: async ({ request, url }) => {
 		const form = await request.formData();
 		const email = stringValue(form, 'email').toLowerCase();
 		const name = stringValue(form, 'name') || 'Earnest user';
@@ -96,11 +105,7 @@ export const actions: Actions = {
 		if (!email) return fail(400, { authError: 'Enter an email address.' });
 
 		try {
-			const auth = getAuth();
-			await auth.api.signInMagicLink({
-				body: { email, name, callbackURL: '/' },
-				headers: request.headers
-			});
+			await requestMagicLink({ email, name, origin: url.origin });
 		} catch {
 			return fail(400, { authError: 'Could not create a magic link for that email.' });
 		}
@@ -110,7 +115,7 @@ export const actions: Actions = {
 			devMagicLink: getDevMagicLink(email)
 		};
 	},
-	signUp: async ({ request }) => {
+	signUp: async ({ cookies, request }) => {
 		const form = await request.formData();
 		const name = stringValue(form, 'name') || 'Earnest user';
 		const email = stringValue(form, 'email').toLowerCase();
@@ -121,48 +126,39 @@ export const actions: Actions = {
 		}
 
 		try {
-			const auth = getAuth();
-			await auth.api.signUpEmail({ body: { name, email, password }, headers: request.headers });
+			await signUpWithPassword(cookies, { name, email, password });
 		} catch {
 			return fail(400, { authError: 'Could not create that account. The email may already be in use.' });
 		}
 
 		throw redirect(303, '/');
 	},
-	signIn: async ({ request }) => {
+	signIn: async ({ cookies, request }) => {
 		const form = await request.formData();
 		const email = stringValue(form, 'email').toLowerCase();
 		const password = stringValue(form, 'password');
 
 		try {
-			const auth = getAuth();
-			await auth.api.signInEmail({ body: { email, password }, headers: request.headers });
+			await signInWithPassword(cookies, { email, password });
 		} catch {
 			return fail(400, { authError: 'Email or password was not recognized.' });
 		}
 
 		throw redirect(303, '/');
 	},
-	google: async ({ request }) => {
-		try {
-			const auth = getAuth();
-			const response = await auth.api.signInSocial({
-				body: { provider: 'google', callbackURL: '/' },
-				headers: request.headers
-			});
-
-			if (response.url) throw redirect(303, response.url);
-		} catch (error) {
-			if (isRedirect(error)) throw error;
+	google: async ({ cookies, url }) => {
+		const authUrl = getGoogleAuthUrl(url.origin);
+		if (authUrl) {
+			setGoogleStateCookie(cookies, authUrl.state);
+			throw redirect(303, authUrl.url);
 		}
 
 		return fail(400, {
 			authError: 'Google OAuth is not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.'
 		});
 	},
-	signOut: async ({ request }) => {
-		const auth = getAuth();
-		await auth.api.signOut({ headers: request.headers });
+	signOut: async ({ cookies }) => {
+		await signOut(cookies);
 		throw redirect(303, '/');
 	},
 	addHabit: async ({ locals, request }) => {
@@ -488,14 +484,4 @@ function startOfToday() {
 	const date = new Date();
 	date.setHours(0, 0, 0, 0);
 	return date;
-}
-
-function isRedirect(error: unknown) {
-	return (
-		typeof error === 'object' &&
-		error !== null &&
-		'status' in error &&
-		(error as { status: number }).status >= 300 &&
-		(error as { status: number }).status < 400
-	);
 }
